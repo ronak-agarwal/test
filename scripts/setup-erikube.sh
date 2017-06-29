@@ -10,11 +10,11 @@ url=$jenkins_url/$build
 echo $url
 
 wget $url
-echo "Untar"
+echo "Untar erikube installer"
 tar xzf $build
 
-echo "Setup Node"
-./setup-node.sh
+echo "Setup boot node"
+sh setup-node.sh
 
 #Update below files with BOOT_IP, MASTER_IP, MINION_IP AND DNS_NAMESEREVER_IP
 
@@ -46,12 +46,17 @@ sed -i s/enp0s3/eth0/g *
 sed -i s/enp0s8/eth0/g *
 
 echo "Install ansible"
-cd ../../../sh/
-./setup-ansible.sh
-#mv jedi/ansible/ /home/jedi/.
-#chown -R jedi:jedi /home/jedi/.
 
-#cd /home/jedi/ansible/playbooks
+cd ../../../sh/
+sh setup-ansible.sh
+
+echo "Move ansible folder to jedi"
+cd ../../
+mv ansible/ /home/jedi/.
+chown -R jedi:jedi /home/jedi/.
+
+echo "####### Run ansible playbooks ######### "
+cd /home/jedi/ansible/playbooks/
 #ansible-playbook -i ../inventories/inventory-dev/ manage-jedi-ceph.yml 
 #ansible-playbook -i ../inventories/inventory-dev/ manage-jedi-ext-ingress-lb.yml 
 ansible-playbook -i ../inventories/inventory-dev/ manage-jedi-kube.yml 
