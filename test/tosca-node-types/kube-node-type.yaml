@@ -1,0 +1,41 @@
+ node_types:
+    
+    tosca.nodes.Root.Jump:
+        derived_from: tosca.nodes.Root 
+        interfaces:
+            Standard:
+                type: tosca.interfaces.node.lifecycle.Standard
+                configure:
+                   implementation: scripts/setup-erikube-dev.sh
+                   inputs:
+                     jenkins_url: 
+                        type: string
+                        default: abc 
+                     build: 
+                        type: string
+                        default: abc
+                     boot_ip: 
+                        type: string
+                        default: abc 
+                     dns_ns_ip: 
+                        type: string
+                        default: abc        
+                       
+    tosca.nodes.Root.Erikube:
+        derived_from: tosca.nodes.Root
+        interfaces:
+            Standard:
+                type: tosca.interfaces.node.lifecycle.Standard
+                create:
+                    implementation: scripts/create-node.sh
+                    inputs:
+                      nodetype: 
+                        type: string
+                        default: abc
+                delete:
+                    implementation: scripts/delete-node.sh    
+                    inputs:
+                      nodetype: 
+                        type: string
+                        default: abc    
+                     

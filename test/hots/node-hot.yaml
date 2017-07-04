@@ -1,0 +1,63 @@
+heat_template_version: 2013-05-23
+
+description: >
+  Simple Erikube Node
+
+parameters:
+  key_name:
+    type: string
+    default: prem
+  network_name:
+    type: string
+    default: aia_internal_portal
+  custom_config:
+    type: string
+    default: ""  
+
+resources:
+  
+  erikube_node:
+    type: OS::Nova::Server
+    properties:
+      key_name:
+        get_param: key_name
+      flavor: m1.small
+      user_data_format: SOFTWARE_CONFIG
+      user_data: { get_resource: config }
+      image: centos-7-1702
+      networks:
+      - port: { get_resource: erikube_port }
+      
+  erikube_port:
+    type: OS::Neutron::Port
+    properties:
+      network: {get_param: network_name}
+  
+  config:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+        - config: {get_resource: node_config}
+        - config: {get_param: custom_config}
+        
+  node_config:
+    type: OS::Heat::CloudConfig
+    properties:
+      cloud_config:
+        merge_how: 'dict(recurse_array,no_replace)+list(append)'
+        write_files:
+          - path: /home/centos/setup-node.sh
+            owner: root:root
+            permissions: '0644'
+            content: 
+              get_file: ../scripts/setup-node.sh
+        runcmd:
+          - cd home/centos/
+          - sh setup-node.sh
+        final_message: "The node is configured"     
+          
+outputs:
+  node_ip:
+    value: {get_attr: [erikube_node, networks, aia_internal_portal, 0]}
+      
+      

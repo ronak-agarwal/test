@@ -1,0 +1,64 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+description: >-
+  Simple Erikube 
+   
+imports:
+  - tosca-node-types/kube-node-type.yaml
+
+topology_template: 
+  
+  inputs:
+    boot_ip:
+      type: string
+      default: 192.168.157.130
+    dns_ns_ip:
+      type: string
+      default: 159.107.189.59    
+    jenkins_url:
+      type: string
+      default: http://kds-jenkinsdocker.rnd.ki.sw.ericsson.se/job/erikube/lastSuccessfulBuild/artifact
+    build:
+      type: string
+      default: erikube-b14.tar.gz
+              
+  node_templates:
+    erikube_jump_node:
+      type: tosca.nodes.Root.Jump
+      requirements:
+        - dependency:
+           node: erikube_minion_node
+      interfaces:
+          Standard:
+            configure:
+              inputs:
+                 jenkins_url: { get_input: jenkins_url }
+                 build: { get_input: build }
+                 boot_ip: { get_input: boot_ip }
+                 dns_ns_ip: { get_input: dns_ns_ip }
+          
+    erikube_master_node:
+      type: tosca.nodes.Root.Erikube    
+      interfaces:
+          Standard:
+            create:
+              inputs:
+                 nodetype: master
+            delete:
+              inputs:
+                 nodetype: master     
+          
+    erikube_minion_node:
+      type: tosca.nodes.Root.Erikube    
+      requirements:
+        - dependency:
+           node: erikube_master_node
+      interfaces:
+          Standard:
+            create:
+              inputs:
+                 nodetype: minion
+            delete:
+              inputs:
+                 nodetype: minion                 
+           
